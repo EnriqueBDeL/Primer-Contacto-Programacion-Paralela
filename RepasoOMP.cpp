@@ -880,3 +880,354 @@ double calcular_serie(int N)
 
 }
 
+
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+
+EJERCICIO 19:
+
+
+
+Analiza el siguiente código:
+
+
+#pragma omp parallel for
+for (int i = 0; i < N; i++) {
+    float temp = v_in[i] * 2.0f;
+    v_out[i] = temp + 5.0f;
+}
+
+
+Por defecto, ¿cuál es el ámbito (scope) de la variable temp dentro del bucle paralelo?
+
+
+
+SOLUCIÓN:
+
+
+
+Las variables declaradas dentro de un bucle paralelo son private por defecto. Cada hilo obtiene su propia copia.
+
+
+
+
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+
+EJERCICIO 20:
+
+
+
+Quieres paralelizar un bucle que calcula el producto de todos los elementos de un vector. El código secuencial es:
+
+
+
+long double producto = 1.0;
+
+for (int i = 0; i < N; i++) {
+    producto = producto * vector[i];
+}
+
+
+¿Cuál es la directiva de OpenMP correcta para paralelizar este bucle?
+
+
+
+SOLUCIÓN:
+
+
+
+long double producto = 1.0;
+
+#pragma omp parallel for reduction(*:producto)
+for (int i = 0; i < N; i++) {
+    producto = producto * vector[i];
+}
+
+
+
+
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+
+EJERCICIO 21:
+
+
+Analiza el siguiente bucle:
+
+
+#pragma omp parallel for
+for (int i = 1; i < N; i++) {
+    A[i] = (A[i-1] + A[i+1]) / 2.0;
+}
+
+¿Se puede paralelizar este bucle tal como está con #pragma omp for?
+
+
+
+SOLUCIÓN:
+
+No, porque existe una dependencia de datos entre iteraciones.
+
+
+
+
+
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+
+EJERCICIO 22:
+
+
+
+
+Observa este código:
+
+
+int factor = 10;
+
+
+for (int i = 0; i < N; i++) {
+    v_out[i] = v_in[i] * factor;
+}
+
+
+Necesitas que cada hilo tenga su propia copia de factor, y que esa copia se inicialice con el valor 10. ¿Qué cláusula usarías?
+
+
+
+SOLUCIÓN:
+
+
+
+int factor = 10;
+
+#pragma omp parallel for firstprivate(factor)
+for (int i = 0; i < N; i++) {
+    v_out[i] = v_in[i] * factor;
+}
+
+
+
+
+
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+
+EJERCICIO 23:
+
+Quieres paralelizar este bucle para encontrar el valor de la última iteración que cumple una condición:
+
+
+
+float ultimo_valor = 0.0f;
+
+for (int i = 0; i < N; i++) {
+
+    if (v[i] > 0.5f) {
+        ultimo_valor = v[i];
+    }
+
+}
+
+¿Qué cláusula es la más adecuada para ultimo_valor?
+
+
+
+SOLUCIÓN:
+
+
+
+float ultimo_valor = 0.0f;
+
+
+#pragma omp parallel for lastprivate(ultimo_valor)
+
+for (int i = 0; i < N; i++) {
+
+    if (v[i] > 0.5f) {
+        ultimo_valor = v[i];
+    }
+
+}
+
+
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+
+EJERCICIO 24:
+
+
+Dada esta función para encontrar el valor mínimo en un vector:
+
+
+float encontrar_min(float *v, int N) {
+   
+ float min_val = v[0];
+    
+  for (int i = 1; i < N; i++) {
+     
+   if (v[i] < min_val) {
+            min_val = v[i];
+        }
+
+    }
+ 
+   return min_val;
+}
+
+
+Paraleliza.
+
+
+
+
+SOLUCIÓN:
+
+float encontrar_min(float *v, int N) {
+   
+ float min_val = v[0];
+  
+  #pragma omp parallel for reduction(min:min_val)
+  
+  for (int i = 1; i < N; i++) {
+     
+   if (v[i] < min_val) {
+            min_val = v[i];
+        }
+
+    }
+ 
+   return min_val;
+}
+
+
+
+
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+
+EJERCICIO 25:
+
+
+Analiza el siguiente código. Tiene un error de concurrencia (condición de carrera) porque la variable temp es compartida.
+
+
+void calcular_cuadrados(float *in, float *out, int size) {
+
+    float temp;
+
+    for (int i = 0; i < size; i++) {
+        temp = in[i] * in[i];
+        out[i] = temp;
+    }
+}
+
+
+
+
+SOLUCIÓN:
+
+void calcular_cuadrados(float *in, float *out, int size) {
+
+    float temp;
+
+    #pragma omp parallel for private(temp)
+    for (int i = 0; i < size; i++) {
+        temp = in[i] * in[i];
+        out[i] = temp;
+    }
+}
+
+
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+
+EJERCICIO 26:
+
+
+¿Cuál es la directiva OMP más eficiente para paralelizar ambos bucles en esta inicialización de matriz?
+
+
+#define N 100
+#define M 100
+int matriz[N][M];
+
+void init_matriz() {
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            matriz[i][j] = i + j;
+        }
+    }
+}
+
+
+SOLUCIÓN:
+
+
+#define N 100
+#define M 100
+int matriz[N][M];
+
+void init_matriz() {
+  #pragma omp parallel for collapse(2)
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            matriz[i][j] = i + j;
+        }
+    }
+}
+
+
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+
+EJERCICIO 27:
+
+
+Implementa una función OMP que encuentre el elemento MÍNIMO de un vector.
+
+
+float getMin(float *v_in, int tamano) {
+    
+float min_val = v_in[0];
+
+    for (int i = 1; i < tamano; i++) {
+       
+ 	if (v_in[i] < min_val) {
+            min_val = v_in[i];
+        }
+
+    }
+    return min_val;
+}
+
+
+SOLUCIÓN:
+
+
+float getMin(float *v_in, int tamano) {
+    
+float min_val = v_in[0];
+ 
+ #pragma omp parallel for reduction(min:min_val)
+    for (int i = 1; i < tamano; i++) {
+       
+ 	if (v_in[i] < min_val) {
+            min_val = v_in[i];
+        }
+
+    }
+    return min_val;
+}
+
+
