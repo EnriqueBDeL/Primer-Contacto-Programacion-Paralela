@@ -86,7 +86,7 @@ __global__ void operacion (float * v_a, float * v_b, float * v_c)
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <cuda_runtime.h>
+#include <cuda.h>
 
 #define N 4096 
 
@@ -132,7 +132,7 @@ int main() {
     dim3 thread(256); 
     dim3 block(16);  
 
-    printf("Ejecutando kernel con %d bloques de %d hilos...\n", block.x, thread.x);
+    printf("Ejecutando kernel con %d bloques de %d hilos...%n", block.x, thread.x);
 
   
     operacion<<<block, thread>>>(v_a_d, v_b_d, v_c_d);
@@ -148,16 +148,16 @@ int main() {
     bool correcto = true;
 
     for (int i = 0; i < 5; i++) { // Imprimimos solo los 5 primeros
-        printf("i=%d: (%f + %f) * (%f - %f) = %f\n", 
+        printf("i=%d: (%f + %f) * (%f - %f) = %f%n", 
                i, v_a_h[i], v_b_h[i], v_a_h[i], v_b_h[i], v_c_h[i]);
         
         if (v_c_h[i] != 84.0f) correcto = false;
     }
 
     if (correcto){
-        printf("\n¡CÁLCULO CORRECTO!\n");
+        printf("%n¡CÁLCULO CORRECTO!%n");
     }else{
-      printf("\nFALLO EN EL CÁLCULO\n");
+      printf("%nFALLO EN EL CÁLCULO%n");
     }
 
 
