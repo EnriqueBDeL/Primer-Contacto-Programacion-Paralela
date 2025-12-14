@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
 
     for (int i = 0; i < N; i++) {
         char cambio = (i > 0 && i < N - 1) ? '*' : ' ';
-        // Corregido: %2d en lugar de un guion fijo para imprimir el índice
+
         printf("|   %2d   |  %8.2f  |  %8.2f %c|\n", i, h_Y_in[i], h_Y_out[i], cambio);
     }
     printf("======================================\n");
@@ -192,3 +192,4 @@ int main(int argc, char **argv) {
     return 0;
 
 }
+
