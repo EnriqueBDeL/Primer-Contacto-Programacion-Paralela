@@ -20,28 +20,42 @@ El problema de no utilizar memoria compartida, es que el código será mucho má
 El kernel "extrapolado" para trabajar directamente sobre la memoria global:
 
 
-__global__ void getMax_NoShared(float *gin, float *gout) {
+#define N 1024
 
-    unsigned int tid = threadIdx.x; 
-    unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+__global__ void getMax_NoShared(float *gin, float *gout, int n_size) {
 
-    
-    __syncthreads();
+    // 1. Solo el primer hilo de cada bloque hace el trabajo.
+    // Todos los demás hilos (1 a 255) permanecen inactivos.
+    if (threadIdx.x == 0) {
+        
+        // Calcular el inicio del segmento de datos que le toca a este bloque
+        int start = blockIdx.x * blockDim.x;
+        
+        // Calcular el final del segmento, asegurando no exceder N
+        int end = start + blockDim.x;
+        if (end > n_size) {
+            end = n_size;
+        }
 
-    for (unsigned int s = blockDim.x / 2; s > 0; s >>= 1) {
-        if (tid < s) {
-            if (gin[i + s] > gin[i]) {
-                gin[i] = gin[i + s]; 
+        // Si el segmento es vacío (no hay datos), no hacemos nada
+        if (start >= n_size) return;
+
+        // 2. Búsqueda Secuencial (Lenta)
+        // El Hilo 0 itera sobre todo su segmento en la Memoria Global
+        float max_val = gin[start]; // Inicializa con el primer valor
+        
+        for (int i = start + 1; i < end; i++) {
+            // Este es un acceso LENTO a la Memoria Global en cada paso
+            if (gin[i] > max_val) {
+                max_val = gin[i];
             }
         }
-        __syncthreads(); // Sincronizamos accesos a memoria global
-    }
 
-    if (tid == 0) {
-        gout[blockIdx.x] = gin[blockIdx.x * blockDim.x];
+        // 3. Escribir el Máximo del Bloque
+        // El resultado se escribe en el índice de 'gout' correspondiente a este bloque
+        gout[blockIdx.x] = max_val;
     }
 }
-
 */
 
 
@@ -142,4 +156,5 @@ int main() {
     free(h_out);
 
     return 0;
+
 }
