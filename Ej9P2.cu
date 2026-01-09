@@ -1,5 +1,7 @@
 //ENUNCIADO:
 
+/*
+
 Escriba un código CUDA completo (main y kernel), centrándose en la gestión de memoria y configuración de ejecución. 
 Dados dos vectores v_in1 y v_in2 de tamaño N de tipo float, calcule el vector de salida v_out según la siguiente fórmula:
 
@@ -11,7 +13,7 @@ v_out[i] = (v_in1[i] * v_in1[i]) + (v_in2[i] / 2.0);
 
 Debes definir N como 2048.
 
-
+*/
 
 //------------------------------------------------------------------------------------------------------------------------------|
 //SOLUCIÓN:
@@ -77,4 +79,5 @@ cudaFree(v_out_d);
 
 
 return 0;
+
 }
